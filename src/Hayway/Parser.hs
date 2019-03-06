@@ -1,4 +1,4 @@
-module GHCParser(
+module Hayway.Parser(
   getDynFlags,
   runParser,
   parseModuleFile
