@@ -25,7 +25,8 @@ library
 
 executable hayway
   main-is:             Main.hs
-  -- other-modules:
+  other-modules:
+    GHCParser
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0, ghc, ghc-paths
   hs-source-dirs:      src
