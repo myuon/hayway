@@ -10,11 +10,13 @@ import qualified StringBuffer
 import qualified SrcLoc
 import qualified FastString
 import qualified Outputable
+import qualified DynFlags
 import qualified GHC
 import qualified GHC.Paths
+import qualified GHC.LanguageExtensions.Type as Ext
 
 getDynFlags :: IO (GHC.DynFlags)
-getDynFlags = GHC.runGhc (Just GHC.Paths.libdir) GHC.getSessionDynFlags
+getDynFlags = flip DynFlags.xopt_set Ext.LambdaCase <$> GHC.runGhc (Just GHC.Paths.libdir) GHC.getSessionDynFlags
 
 runParser :: GHC.DynFlags -> FilePath -> Lexer.P a -> IO (Lexer.ParseResult a)
 runParser flags path parser = do
