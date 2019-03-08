@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import qualified Lexer
@@ -6,6 +5,7 @@ import qualified SrcLoc
 import qualified Outputable
 import qualified HsSyn
 import qualified Hayway.Parser
+import qualified Hayway.Format
 
 filename :: FilePath
 filename = "./src/Main.hs"
@@ -17,8 +17,6 @@ loadAST path = do
     Lexer.POk _ h -> Right h
     Lexer.PFailed _ _ d -> Left d
 
-applyRules = undefined
-
 recoverSrcLoc = undefined
 
 main :: IO ()
@@ -27,4 +25,4 @@ main = do
 
   loadAST filename >>= \case
     Left d -> print $ Outputable.showSDoc flags d
-    Right r -> return ()
+    Right r -> putStrLn $ Outputable.showSDoc flags $ Outputable.ppr $ SrcLoc.unLoc r
