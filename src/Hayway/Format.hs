@@ -1,8 +1,9 @@
-module Hayway.Format (formatModule) where
+module Hayway.Format where
 
 import qualified SrcLoc
 import qualified HsSyn
 import qualified HsDecls
+import qualified HsImpExp
 import qualified Module
 import qualified Data.Heap as Heap
 import Control.Monad.State.CPS
@@ -21,8 +22,11 @@ type LocHeap = Heap.Heap (Heap.Entry SrcLoc.SrcLoc Layout)
 getHeadLoc :: SrcLoc.Located a -> SrcLoc.SrcLoc
 getHeadLoc = SrcLoc.srcSpanStart . SrcLoc.getLoc
 
-formatModule :: SrcLoc.SrcLoc -> HsSyn.HsModule pass -> State Layout LocHeap
-formatModule srcloc hsmod = F.foldlM (\heap -> fmap (Heap.union heap)) Heap.empty [locModDecl, locDecls]
+format :: HsSyn.HsModule pass -> LocHeap
+format = flip evalState (Layout 0 0) . formatModule
+
+formatModule :: HsSyn.HsModule pass -> State Layout LocHeap
+formatModule hsmod = F.foldlM (\heap -> fmap (Heap.union heap)) Heap.empty [locModDecl, locDecls]
   where
     locDecls =
       F.foldlM (\heap ldecl ->
@@ -35,6 +39,14 @@ formatModule srcloc hsmod = F.foldlM (\heap -> fmap (Heap.union heap)) Heap.empt
         incrementOrder
         return $ Heap.singleton $ Heap.Entry (getHeadLoc name) layout
       ) (HsSyn.hsmodName hsmod)
+
+formatExports :: [HsImpExp.LIE pass] -> State Layout LocHeap
+formatExports = fmap Heap.fromList . mapM go where
+  go lie = case SrcLoc.unLoc lie of
+    HsImpExp.IEVar _ name -> do
+      layout <- get
+      incrementOrder
+      return $ Heap.Entry (getHeadLoc name) layout
 
 formatDecl :: SrcLoc.SrcLoc -> HsDecls.HsDecl pass -> State Layout LocHeap
 formatDecl = undefined
